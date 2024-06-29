@@ -2,20 +2,6 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-"""
-Name: Python Data Analysis
-Purpose: Maximum and Minimum emission in Country + Average emission in year
-
-Algorithm:
-
-Step 1: Take the input from user
-Step 2: Extracting index of the year
-Step 3: Creating the list of emission in year
-Step 4: Performing the analysis
-Step 5: Printing the data in required format using formatted string
-
-"""
-
 def main():
   print("#"*30)
   print("Worlds CO2 Emission - Data avaible from 1997 to 2010")
@@ -83,7 +69,7 @@ def get_average(values: list) -> float:
 
 def get_user_country(countries: dict) -> str:
   country = input("Select a country to visualize the plot: ").capitalize()
-  
+
   while country not in countries:
     print("Country not found, please use a country from our list.") 
     print(f"Avaiables Countries: {list(countries)}")
@@ -91,12 +77,11 @@ def get_user_country(countries: dict) -> str:
 
   return country
 
+
 def plot_emissions_by_country(country: str, emissions: dict) -> None:
   fig, ax = plt.subplots()
-  values = emissions.get(country)
-  values = [float(value) for value in values]
-  years = emissions.get("CO2 per capita")
-  years = [int(year) for year in years]
+  values = [float(value) for value in emissions.get(country)]
+  years = [int(year) for year in emissions.get("CO2 per capita")]
   ax.set_title("Year vs Emission in Capita")
   ax.set_xlabel("Year")
   ax.set_ylabel(f"Emissions in {country}")
