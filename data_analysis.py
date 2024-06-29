@@ -20,6 +20,9 @@ def main():
   country = get_user_country(emissions_without_year.keys())
   plot_emissions_by_country(country, emissions)
 
+  countries = list(get_user_countries(emissions_without_year.keys()))
+  plot_emissions_by_two_countries(countries, emissions)
+
 def read_file(path: str) -> dict:
   emissions = dict()
   with open(path, 'rt') as file:
@@ -67,25 +70,59 @@ def get_average(values: list) -> float:
   total = sum([x for x in values])
   return total/len(values)
 
-def get_user_country(countries: dict) -> str:
+def get_user_country(countries_list: dict) -> str:
   country = input("Select a country to visualize the plot: ").capitalize()
-
-  while country not in countries:
+  havePrintedCountryList = False
+  while country not in countries_list:
+    if not havePrintedCountryList:
+      print(f"Avaiables Countries: {list(countries_list)}")
+    havePrintedCountryList = True
     print("Country not found, please use a country from our list.") 
-    print(f"Avaiables Countries: {list(countries)}")
     country = input("Select a country to visualize the plot: ").capitalize()
 
   return country
+
+def get_user_countries(countries_list: dict) -> any:
+  haveValidCountryAnswer = False
+
+  while not haveValidCountryAnswer:
+    input_countries = input("Write two comma-separated countries for which you want to visualize the data: ")
+
+    for country in input_countries.split(','):
+      country = country.strip().capitalize()
+      if country not in countries_list:
+        print("Country not found, please use a country from our list.") 
+        break
+      haveValidCountryAnswer = True
+      yield country
 
 
 def plot_emissions_by_country(country: str, emissions: dict) -> None:
   fig, ax = plt.subplots()
   values = [float(value) for value in emissions.get(country)]
   years = [int(year) for year in emissions.get("CO2 per capita")]
+  ax.plot(years, values)
+
   ax.set_title("Year vs Emission in Capita")
   ax.set_xlabel("Year")
   ax.set_ylabel(f"Emissions in {country}")
-  ax.plot(years, values)
+
+  plt.show()
+
+def plot_emissions_by_two_countries(countries: list, emissions: dict) -> None:
+  fig, ax = plt.subplots()
+  values_one = [float(value) for value in emissions.get(countries[0].capitalize())]
+  values_two = [float(value) for value in emissions.get(countries[1].capitalize())]
+  years = [int(year) for year in emissions.get("CO2 per capita")]
+
+  ax.plot(years, values_one, label=countries[0])
+  ax.plot(years, values_two, label=countries[1])
+
+  ax.set_title("Year vs Emission in Capita")
+  ax.set_xlabel("Year")
+  ax.set_ylabel(f"Emissions in {countries[0]} and {countries[1]}")
+  ax.legend()
+
   plt.show()
 
 if __name__ == "__main__":
