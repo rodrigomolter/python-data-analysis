@@ -1,6 +1,5 @@
 import sys
 import matplotlib.pyplot as plt
-import numpy as np
 
 def main():
   print("#"*30)
@@ -17,18 +16,26 @@ def main():
   print(f"In {year}, countries with minimum and maximum CO2 levels were: {min[0]}({min[1]:.6f}) and {max[0]}({max[1]:.6f})")
   print(f"Average CO2 emissions in {year} were {get_average(year_emissions):.6f}")
 
-  country = get_user_country(emissions_without_year.keys())
-  plot_emissions_by_country(country, emissions)
+  single_country = list(get_user_countries(1, "Select a country to visualize the plot: ", emissions_without_year.keys()))[0]
+  plot_emissions_by_country(single_country, emissions)
 
-  countries = list(get_user_countries(emissions_without_year.keys()))
-  plot_emissions_by_two_countries(countries, emissions)
+  two_countries = list(get_user_countries(2, "Write two comma-separated countries for which you want to visualize the data: ", emissions_without_year.keys()))
+  plot_emissions_by_two_countries(two_countries, emissions)
+
+  three_countries = list(get_user_countries(3, "Write up three comma-separated countries for which you want to extract the data: ", emissions_without_year.keys()))
+  extract_data_to_subset(three_countries, emissions)
 
 def read_file(path: str) -> dict:
   emissions = dict()
-  with open(path, 'rt') as file:
-    for row in file.readlines():
-      data = row.replace('\n', '').split(',')
-      emissions.update({ data[0]: data[1:] })
+  try:
+    with open(path, 'rt') as file:
+      for row in file.readlines():
+        data = row.replace('\n', '').split(',')
+        emissions.update({ data[0]: data[1:] })
+  except FileNotFoundError:
+    print(f"File {path} not found....")
+  except IOError:
+    print(f"Could not read the file in {path}")
     
   return emissions
 
@@ -70,29 +77,26 @@ def get_average(values: list) -> float:
   total = sum([x for x in values])
   return total/len(values)
 
-def get_user_country(countries_list: dict) -> str:
-  country = input("Select a country to visualize the plot: ").capitalize()
-  havePrintedCountryList = False
-  while country not in countries_list:
-    if not havePrintedCountryList:
-      print(f"Avaiables Countries: {list(countries_list)}")
-    havePrintedCountryList = True
-    print("Country not found, please use a country from our list.") 
-    country = input("Select a country to visualize the plot: ").capitalize()
 
-  return country
-
-def get_user_countries(countries_list: dict) -> any:
+def get_user_countries(country_amount: int, message: str, countries_list: dict):
   haveValidCountryAnswer = False
-
+  havePrintedCountryList = False
   while not haveValidCountryAnswer:
-    input_countries = input("Write two comma-separated countries for which you want to visualize the data: ")
+    user_input = input(message)
 
-    for country in input_countries.split(','):
+    for country in user_input.split(','):
       country = country.strip().capitalize()
-      if country not in countries_list:
-        print("Country not found, please use a country from our list.") 
+
+      if len(user_input.split(',')) != country_amount:
+        print(f"ERR: Sorry, at most {country_amount} countries can be entered, separeted by comma.")
         break
+      elif country not in countries_list:
+        print("Country not found, please use a country from our list.") 
+        if not havePrintedCountryList:
+          print(f"Avaiables Countries: {list(countries_list)}")
+          havePrintedCountryList = True
+        break
+
       haveValidCountryAnswer = True
       yield country
 
@@ -124,6 +128,17 @@ def plot_emissions_by_two_countries(countries: list, emissions: dict) -> None:
   ax.legend()
 
   plt.show()
+
+
+def extract_data_to_subset(countries: list, emissions: dict) -> None:
+  try:
+    with open('Emissions_subset.csv', 'w') as file:
+      file.write(f"CO2 per capita,{','.join(emissions.get('CO2 per capita'))}")
+      for country in countries:
+        file.write(f"\n{country},{','.join(emissions.get(country))}")
+    print("Data exported to Emissions_subset.csv")
+  except IOError:
+    print(f"Error: Could not save the file.")
 
 if __name__ == "__main__":
   main()
